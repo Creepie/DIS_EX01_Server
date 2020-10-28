@@ -13,6 +13,7 @@
 
 #define IPPORT (_argv[1])
 #include "TCPServer.h"
+#include "UDPServer.h"
 
 void printCommandLine(){
     std::cout << "C++ Server Menu:" << std::endl;
@@ -44,7 +45,10 @@ int main(int _argc, char **_argv) {
         } else if (strcmp(msg, "2") == 0){
 
         } else if (strcmp(msg, "3") == 0){
-
+            UDPServer *u1 = new UDPServer(getPort);
+            u1->initializeSocket();
+            u1->startSocket();
+            delete u1;
         } else if (strcmp(msg, "4") == 0){
             exit(0);
         }
