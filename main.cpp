@@ -22,29 +22,33 @@ void printCommandLine(){
     std::cout << "3. Start UDP Echo Server" << std::endl;
     std::cout << "4. Exit" << std::endl;
     std::cout << "----------------------" << std::endl;
-    std::cout << "Choose server type to start: ";
 }
 
 int main(int _argc, char **_argv) {
     int  getPort htons(atoi(IPPORT));
 
     printCommandLine();
-    char msg[BUFFER_SIZE];
-    std::cin.getline(msg,BUFFER_SIZE);                                     //get the input line and save it into msg
-    strcat(msg, "\0");
+    while (true){
+        std::cout << "Choose server type to start: ";
 
+        char msg[BUFFER_SIZE];
+        std::cin.getline(msg,BUFFER_SIZE);                                     //get the input line and save it into msg
+        strcat(msg, "\0");
 
-    if (strcmp(msg, "1") == 0){
-        TCPServer *s1 = new TCPServer(getPort);
+        if (strcmp(msg, "1") == 0){
+            TCPServer *s1 = new TCPServer(getPort);
 
-        s1->initializeSocket();
-        s1->startSocket();
-        delete s1;
+            s1->initializeSocket();
+            s1->startSocket();
+            delete s1;
+        } else if (strcmp(msg, "2") == 0){
+
+        } else if (strcmp(msg, "3") == 0){
+
+        } else if (strcmp(msg, "4") == 0){
+            exit(0);
+        }
     }
-
-
-
-
 }
 
 #endif

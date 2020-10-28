@@ -30,12 +30,10 @@ void TCPServer::initializeSocket() {
     //Bind
     struct sockaddr_in serverAddr;                                                 //creates a sockaddr_in object (in = internet)
     serverAddr.sin_family = AF_INET;                                               //Format Ipv4
-    serverAddr.sin_port = ipPort;                                  //get the Port from the IPPORT (htons = host to network short, atoi = argument to integer)
+    serverAddr.sin_port = ipPort;                                                  //get the Port from the IPPORT (htons = host to network short, atoi = argument to integer)
     serverAddr.sin_addr.s_addr = INADDR_ANY;                                       //search automatically the ipAdress
-    memset(&(serverAddr.sin_zero), '\0',
-           8);                                // \0 get copied in the first 8 char character of sin_zero
-    if (bind(serverSocket, (sockaddr *) &serverAddr, sizeof(serverAddr)) <
-        0) {      //check if the bind method got a error return value (<0)
+    memset(&(serverAddr.sin_zero), '\0',8);                                // \0 get copied in the first 8 char character of sin_zero
+    if (bind(serverSocket, (sockaddr *) &serverAddr, sizeof(serverAddr)) <0) {     //check if the bind method got a error return value (<0)
         std::cout << "Fehler in der Bind" << std::endl;
         return;
     }
@@ -55,7 +53,6 @@ void TCPServer::startSocket() {
     while (strcmp(msg, "shutdown") != 0) {
         //commSocket > socket for each client
         int commSocket = accept(serverSocket, (sockaddr *) &clientAddr,&clientAddrSize);    //creates the commSocket in the serverSocket
-
 
         while (strcmp(msg, "exit") != 0 && strcmp(msg, "shutdown") != 0 ) {
             //receive
@@ -83,5 +80,6 @@ void TCPServer::startSocket() {
         int closeSocket = close(commSocket);                                        //close the client socket
     } // close second while
     int closeSocket = close(serverSocket);
+    exit(0);
 }
 
