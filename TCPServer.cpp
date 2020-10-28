@@ -15,8 +15,8 @@
 
 #define BUFFER_SIZE 1024
 
-TCPServer::TCPServer(int port) {
-    ipPort = port;
+TCPServer::TCPServer(int _port) {
+    ipPort = _port;
 }
 
 void TCPServer::initializeSocket() {
