@@ -40,6 +40,11 @@ void UDPServer::initializeSocket() {
 }
 
 void UDPServer::startSocket() {
+    //recvfrom
+    char msg[BUFFER_SIZE];
+    sockaddr_in from;
+    socklen_t frommSize = sizeof(from);
 
+    int rVal = recvfrom(serverSocket, msg, BUFFER_SIZE, 0, (sockaddr*) &from, &frommSize);
 }
 
