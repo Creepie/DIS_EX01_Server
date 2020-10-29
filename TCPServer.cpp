@@ -38,6 +38,13 @@ void TCPServer::initializeSocket() {
         return;
     }
 
+    //setSocketOptions
+    bool bOptVal = true;
+    int bOptLen = sizeof(bool);
+    if (setsockopt(serverSocket, SOL_SOCKET,SO_REUSEADDR,(char*)&bOptVal,bOptLen) == -1){
+        std::cout << "socket Freigabe war nicht möglich" << std::endl;
+    }
+
     //listen
     int backlock = 20;                                                              //count of connections
     int serverListen = listen(serverSocket, backlock);                              //
