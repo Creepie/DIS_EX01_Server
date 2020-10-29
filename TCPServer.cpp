@@ -57,6 +57,7 @@ void TCPServer::startSocket() {
     struct sockaddr_in clientAddr;                                              //creates a sockaddr_in object (in = internet)
     socklen_t clientAddrSize = sizeof(clientAddr);                              //creates a socklen_t variable with the size of clientAddr in it
     char msg[BUFFER_SIZE];
+    memset(msg, '\0', sizeof(msg));
     while (strcmp(msg, "shutdown") != 0) {
         //commSocket > socket for each client
         int commSocket = accept(serverSocket, (sockaddr *) &clientAddr,&clientAddrSize);    //creates the commSocket in the serverSocket
@@ -87,6 +88,5 @@ void TCPServer::startSocket() {
         int closeSocket = close(commSocket);                                        //close the client socket
     } // close second while
     int closeSocket = close(serverSocket);
-    exit(0);
 }
 

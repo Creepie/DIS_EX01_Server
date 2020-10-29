@@ -40,12 +40,14 @@ void UDPServer::initializeSocket() {
 }
 
 void UDPServer::startSocket() {
+    std::cout << "ready for conversation" << std::endl;
     //recvfrom
     sockaddr_in from;
     socklen_t frommSize = sizeof(from);
 
 
     char msg[BUFFER_SIZE];
+    memset(msg, '\0', sizeof(msg));
     while (strcmp(msg, "shutdown") != 0){
         //recvfrom and send Echo
         if (recvfrom(serverSocket, msg, BUFFER_SIZE, 0, (sockaddr*) &from, &frommSize) >=0 ){
