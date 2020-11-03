@@ -20,19 +20,26 @@ UDPServer::UDPServer(int port) {
 }
 
 void UDPServer::initializeSocket() {
-    //Socket
+    /**
+     * Socket
+     */
     int _addressFormat = AF_INET;                                                  //Format Ipv4
     int _socketType = SOCK_DGRAM;                                                 //UDP
     int _socketProtocol = 0;                                                       //communication protocol > self check
 
     serverSocket = socket(_addressFormat, _socketType, _socketProtocol);       //creates a server Socket
 
-    //Bind
+    /**
+     * Bind
+     */
     struct sockaddr_in serverAddr;                                                 //creates a sockaddr_in object (in = internet)
     serverAddr.sin_family = AF_INET;                                               //Format Ipv4
     serverAddr.sin_port = ipPort;                                                  //get the Port from the IPPORT (htons = host to network short, atoi = argument to integer)
     serverAddr.sin_addr.s_addr = INADDR_ANY;                                       //search automatically the ipAdress
     memset(&(serverAddr.sin_zero), '\0',8);                                // \0 get copied in the first 8 char character of sin_zero
+    /**
+     * check if the bind method got a error return value (<0)
+     */
     if (bind(serverSocket, (sockaddr *) &serverAddr, sizeof(serverAddr)) <0) {     //check if the bind method got a error return value (<0)
         std::cout << "Fehler in der Bind" << std::endl;
         return;
@@ -41,7 +48,9 @@ void UDPServer::initializeSocket() {
 
 void UDPServer::startSocket() {
     std::cout << "ready for conversation" << std::endl;
-    //recvfrom
+    /**
+     * recvfrom (save the from data after we got a message)
+     */
     sockaddr_in from;
     socklen_t frommSize = sizeof(from);
 
@@ -49,7 +58,9 @@ void UDPServer::startSocket() {
     char msg[BUFFER_SIZE];
     memset(msg, '\0', sizeof(msg));
     while (strcmp(msg, "shutdown") != 0){
-        //recvfrom and send Echo
+        /**
+         * recvfrom (check if the return val >= 0 means no error)
+         */
         if (recvfrom(serverSocket, msg, BUFFER_SIZE, 0, (sockaddr*) &from, &frommSize) >=0 ){
             std::cout << msg << std::endl;
             char *echo = "Echo: ";
@@ -59,7 +70,9 @@ void UDPServer::startSocket() {
             strcat(sendMsg, "\0");
             int msgSize = strlen(sendMsg) + 1;
 
-            //send
+            /**
+             * save from data into toAddr
+             */
             sockaddr_in toAddr;
             toAddr.sin_family = from.sin_family;
             toAddr.sin_port = from.sin_port;
@@ -67,6 +80,9 @@ void UDPServer::startSocket() {
             memset(&(toAddr.sin_zero),'\0',0);
             int toSize = sizeof(toAddr);
 
+            /**
+             * send Echo and check the return value of the sendTo ( if -1 we had an error)
+             */
             if (sendto(serverSocket, sendMsg, msgSize,0,(sockaddr*) &toAddr, toSize) == -1){
                 std::cout << "Fehler in der Send" << std::endl;
             }
@@ -74,7 +90,7 @@ void UDPServer::startSocket() {
                     memset(msg, '\0', sizeof(msg));                                      //reset msg
                 }
         }
-    }
+    } // end while
     if (close(serverSocket) == -1){
         std::cout << "Fehler in der Close" << std::endl;
     }
