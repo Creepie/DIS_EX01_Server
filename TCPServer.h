@@ -18,6 +18,8 @@
 
 #define IPPORT (_argv[1])
 
+static pthread_mutex_t mMutex;
+
 class TCPServer {
 public:
     TCPServer(int port);
@@ -27,11 +29,14 @@ public:
 
 
 private:
+    void incrementSem();
+    void decrementSem();
     int ipPort;
     int serverSocket;
     struct SocketParam{
         int commSocket;
         int serverSocketParam;
+        TCPServer *self;
     };
 };
 

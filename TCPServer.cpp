@@ -17,6 +17,10 @@
 
 TCPServer::TCPServer(int _port) {
     ipPort = _port;
+    mMutex = PTHREAD_MUTEX_INITIALIZER;
+    if (pthread_mutex_init(&mMutex, NULL) != 0){
+        std::cout << "Fehler in der mMutex init" << std::endl;
+    }
 }
 
 void TCPServer::initializeSocket() {
@@ -62,9 +66,25 @@ void TCPServer::initializeSocket() {
     int serverListen = listen(serverSocket, backlock);                              //
 }
 
+/**
+ * in this method i increment the sem
+ */
+void TCPServer::incrementSem() {
+   pthread_mutex_unlock(&mMutex);
+}
+
+/**
+ * in this method i decrement the sem
+ */
+void TCPServer::decrementSem() {
+    pthread_mutex_lock(&mMutex);
+}
+
 void * TCPServer::clientCommunication(void *_parameter) {
 
     SocketParam *param = (SocketParam*)_parameter;
+
+    param->self->decrementSem();
     int commSocket = param->commSocket;
     int serverSocket = param->serverSocketParam;
 
@@ -95,6 +115,7 @@ void * TCPServer::clientCommunication(void *_parameter) {
         }
     }
     int closeSocket = close(commSocket);                                        //close the client socket
+    param->self->incrementSem();
     if (strcmp(msg, "shutdown")== 0 ){
         int closeServerSocket = close(serverSocket);
         exit(0);
@@ -120,11 +141,11 @@ void TCPServer::startSocket() {
             param->commSocket = commSocket;
             param->serverSocketParam = serverSocket;
 
+            param->self= this;
             pthread_t threadID;
             if (pthread_create(&threadID,NULL,clientCommunication, param) != 0){
                 std::cout << "Problem in der Thread Method" << std::endl;
             }
         }
-
 }
 
