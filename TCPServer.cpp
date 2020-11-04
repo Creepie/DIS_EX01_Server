@@ -84,7 +84,7 @@ void * TCPServer::clientCommunication(void *_parameter) {
 
     SocketParam *param = (SocketParam*)_parameter;
 
-    param->self->decrementSem();
+    decrementSem();
     int commSocket = param->commSocket;
     int serverSocket = param->serverSocketParam;
 
@@ -115,7 +115,7 @@ void * TCPServer::clientCommunication(void *_parameter) {
         }
     }
     int closeSocket = close(commSocket);                                        //close the client socket
-    param->self->incrementSem();
+    incrementSem();
     if (strcmp(msg, "shutdown")== 0 ){
         int closeServerSocket = close(serverSocket);
         exit(0);
@@ -141,7 +141,6 @@ void TCPServer::startSocket() {
             param->commSocket = commSocket;
             param->serverSocketParam = serverSocket;
 
-            param->self= this;
             pthread_t threadID;
             if (pthread_create(&threadID,NULL,clientCommunication, param) != 0){
                 std::cout << "Problem in der Thread Method" << std::endl;

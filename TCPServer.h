@@ -29,8 +29,8 @@ public:
 
 
 private:
-    void incrementSem();
-    void decrementSem();
+    static void incrementSem();
+    static void decrementSem();
     int ipPort;
     int serverSocket;
     struct SocketParam{
