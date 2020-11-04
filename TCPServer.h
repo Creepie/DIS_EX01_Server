@@ -23,11 +23,16 @@ public:
     TCPServer(int port);
     void initializeSocket();
     void startSocket();
+    static void* clientCommunication(void* _parameter);
 
 
 private:
     int ipPort;
     int serverSocket;
+    struct SocketParam{
+        int commSocket;
+        int serverSocketParam;
+    };
 };
 
 #endif //DIS_EX01_SERVER_TCPSERVER_H

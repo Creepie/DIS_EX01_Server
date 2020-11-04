@@ -62,6 +62,45 @@ void TCPServer::initializeSocket() {
     int serverListen = listen(serverSocket, backlock);                              //
 }
 
+void * TCPServer::clientCommunication(void *_parameter) {
+
+    SocketParam *param = (SocketParam*)_parameter;
+    int commSocket = param->commSocket;
+    int serverSocket = param->serverSocketParam;
+
+    char msg[BUFFER_SIZE];
+    memset(msg, '\0', sizeof(msg));
+
+    while (strcmp(msg, "exit") != 0 && strcmp(msg, "shutdown") != 0 ) {
+        /**
+         * receive return val > 0 if no problem
+         */
+        if (recv(commSocket, msg, BUFFER_SIZE, 0) >0) {                             //check if the recv method got a error return value (<=0) something goes wrong the the receive
+            /**
+             * send return val > 0 if no problem
+             */
+            std::cout << msg << std::endl;
+            char *echo = "Echo: ";
+            char sendMsg[BUFFER_SIZE];                                                  //create a ACK message
+            strcpy(sendMsg, echo);
+            strcat(sendMsg, msg);
+            strcat(sendMsg, "\0");
+            if (!send(commSocket, sendMsg, strlen(sendMsg), 0) >0) {                   //send the ACK and check if the send method got a error return value (<=0)
+                std::cout << "Error Sending message" << std::endl;
+            }
+            memset(sendMsg, '\0', sizeof(sendMsg));
+        } else {
+            std::cout << "Fehler in der Übertragung" << std::endl;
+            //return -1;
+        }
+    }
+    int closeSocket = close(commSocket);                                        //close the client socket
+    if (strcmp(msg, "shutdown")== 0 ){
+        int closeServerSocket = close(serverSocket);
+        exit(0);
+    }
+}
+
 void TCPServer::startSocket() {
     std::cout << "waiting for connection" << std::endl;
 
@@ -70,44 +109,22 @@ void TCPServer::startSocket() {
      */
     struct sockaddr_in clientAddr;                                              //creates a sockaddr_in object (in = internet)
     socklen_t clientAddrSize = sizeof(clientAddr);                              //creates a socklen_t variable with the size of clientAddr in it
-    char msg[BUFFER_SIZE];
-    memset(msg, '\0', sizeof(msg));
-    while (strcmp(msg, "shutdown") != 0) {
-        /**
-         * first while > ServerSocket is running and now we create a commSocket
-         * commSocket > socket for each client
-         */
-        int commSocket = accept(serverSocket, (sockaddr *) &clientAddr,&clientAddrSize);    //creates the commSocket in the serverSocket
 
-        while (strcmp(msg, "exit") != 0 && strcmp(msg, "shutdown") != 0 ) {
+        while (true){
             /**
-             * receive return val > 0 if no problem
+             * commSocket > socket for each client
              */
-            if (recv(commSocket, msg, BUFFER_SIZE, 0) >0) {                             //check if the recv method got a error return value (<=0) something goes wrong the the receive
-                /**
-                 * send return val > 0 if no problem
-                 */
-                std::cout << msg << std::endl;
-                char *echo = "Echo: ";
-                char sendMsg[BUFFER_SIZE];                                                  //create a ACK message
-                strcpy(sendMsg, echo);
-                strcat(sendMsg, msg);
-                strcat(sendMsg, "\0");
-                if (!send(commSocket, sendMsg, strlen(sendMsg), 0) >0) {                   //send the ACK and check if the send method got a error return value (<=0)
-                    std::cout << "Error Sending message" << std::endl;
-                }
-                memset(sendMsg, '\0', sizeof(sendMsg));
-            } else {
-                std::cout << "Fehler in der Übertragung" << std::endl;
-                //return -1;
-            }
+            int commSocket = accept(serverSocket, (sockaddr *) &clientAddr,&clientAddrSize);    //creates the commSocket in the serverSocket
 
-        } // close first while (commSocket with client)
-        if (strcmp(msg, "shutdown") != 0){
-            memset(msg, '\0', sizeof(msg));                                      //reset msg
+            SocketParam *param = new SocketParam;
+            param->commSocket = commSocket;
+            param->serverSocketParam = serverSocket;
+
+            pthread_t threadID;
+            if (pthread_create(&threadID,NULL,clientCommunication, param) != 0){
+                std::cout << "Problem in der Thread Method" << std::endl;
+            }
         }
-        int closeSocket = close(commSocket);                                        //close the client socket
-    } // close second while (serverSocket)
-    int closeSocket = close(serverSocket);
+
 }
 
