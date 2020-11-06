@@ -90,6 +90,10 @@ void * TCPServer::clientCommunication(void *_parameter) {
     int serverSocket = param->serverSocketParam;
 
     char msg[BUFFER_SIZE];
+
+    /**
+     * get timeStamp and save it in a String
+     */
     time_t seconds;
     time(&seconds);
     std::stringstream ss;
@@ -123,7 +127,6 @@ void * TCPServer::clientCommunication(void *_parameter) {
             } else{
                 responseText.append("Echo: ");
                 responseText.append(msg);
-                char *echo = "Echo: ";
             }
 
             char sendMsg [BUFFER_SIZE];
