@@ -12,6 +12,7 @@
 #include <arpa/inet.h> // inet_ntop/inet_atop
 #include <string.h> // strlen
 #include <semaphore.h> // sem_init
+#include <sstream>
 
 #define BUFFER_SIZE 1024
 
@@ -89,7 +90,11 @@ void * TCPServer::clientCommunication(void *_parameter) {
     int serverSocket = param->serverSocketParam;
 
     char msg[BUFFER_SIZE];
-    memset(msg, '\0', sizeof(msg));
+    time_t seconds;
+    time(&seconds);
+    std::stringstream ss;
+    ss << seconds;
+    std::string timeStamp = ss.str();
 
     while (strcmp(msg, "exit") != 0 && strcmp(msg, "shutdown") != 0 ) {
         /**
@@ -100,11 +105,29 @@ void * TCPServer::clientCommunication(void *_parameter) {
              * send return val > 0 if no problem
              */
             std::cout << msg << std::endl;
-            char *echo = "Echo: ";
-            char sendMsg[BUFFER_SIZE];                                                  //create a ACK message
-            strcpy(sendMsg, echo);
-            strcat(sendMsg, msg);
-            strcat(sendMsg, "\0");
+
+            std::string responseText;                                                  //create a ACK message
+            if (strcmp(msg, "getSensortypes()#") == 0){
+                responseText.append("light;noise;air#");
+            } else if(strcmp(msg, "Sensor(light)#") == 0){
+                responseText.append(timeStamp);
+                responseText.append(" light");
+            } else if(strcmp(msg, "Sensor(noise)#") == 0){
+                responseText.append(timeStamp);
+                responseText.append(" noise");
+            }  else if(strcmp(msg, "Sensor(air)#") == 0){
+                responseText.append(timeStamp);
+                responseText.append(" air");
+            }   else if(strcmp(msg, "getAllSensors()#") == 0){
+
+            } else{
+                responseText.append("Echo: ");
+                responseText.append(msg);
+                char *echo = "Echo: ";
+            }
+
+            char sendMsg [BUFFER_SIZE];
+            strcpy(sendMsg, responseText.c_str());
             if (!send(commSocket, sendMsg, strlen(sendMsg), 0) >0) {                   //send the ACK and check if the send method got a error return value (<=0)
                 std::cout << "Error Sending message" << std::endl;
             }
