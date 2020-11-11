@@ -130,17 +130,21 @@ void * TCPServer::clientCommunication(void *_parameter) {
                 responseText.append(timeStamp);
                 responseText.append(" | ");
                 responseText.append(std::to_string(numberLight));
-                responseText.append(" #");
+                responseText.append("#");
             } else if(strcmp(msg, "Sensor(noise)#") == 0){
                 responseText.append(timeStamp);
                 responseText.append(" | ");
                 responseText.append(std::to_string(numberNoise));
-                responseText.append(" #");
+                responseText.append("#");
             }  else if(strcmp(msg, "Sensor(air)#") == 0){
                 responseText.append(timeStamp);
                 responseText.append(" | ");
-                responseText.append(std::to_string(numberAir));
-                responseText.append(" #");
+                for (int i = 0; i < 2; i++){
+                    responseText.append(std::to_string(rand() % 100 + 1));
+                    responseText.append(";");
+                }
+                responseText.append(std::to_string(rand() % 100 + 1));
+                responseText.append("#");
             }   else if(strcmp(msg, "getAllSensors()#") == 0){
                 responseText.append(timeStamp);
                 responseText.append(" | ");
@@ -151,7 +155,11 @@ void * TCPServer::clientCommunication(void *_parameter) {
                 responseText.append(std::to_string(numberNoise));
                 responseText.append(" | ");
                 responseText.append("air;");
-                responseText.append(std::to_string(numberAir));
+                for (int i = 0; i < 2; i++){
+                    responseText.append(std::to_string(rand() % 100 + 1));
+                    responseText.append(";");
+                }
+                responseText.append(std::to_string(rand() % 100 + 1));
                 responseText.append("#");
             } else{
                 responseText.append("Echo: ");
