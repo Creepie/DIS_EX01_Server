@@ -182,9 +182,9 @@ void * TCPServer::clientCommunication(void *_parameter) {
         }
     }
     incrementSem();
-    int closeSocket = close(commSocket);                                        //close the client socket
     std::cout << "thread kurz vor delte" << std::endl;
     if (strcmp(msg, "shutdown")== 0 || strcmp(msg, "shutdown\n") == 0){
+        int closeSocket = close(commSocket);
         int closeServerSocket = close(serverSocket);
         exit(0);
     }
@@ -213,7 +213,6 @@ void TCPServer::startSocket() {
             if (pthread_create(&threadID,NULL,clientCommunication, param) != 0){
                 std::cout << "Problem in der Thread Method" << std::endl;
             }
-            std::cout << "rdy für neuen client" << std::endl;
         }
 }
 
