@@ -110,11 +110,12 @@ void * TCPServer::clientCommunication(void *_parameter) {
         /**
          * receive return val > 0 if no problem
          */
+        memset(msg, '\0', sizeof(msg)+1);
         if (recv(commSocket, msg, BUFFER_SIZE, 0) >0) {                             //check if the recv method got a error return value (<=0) something goes wrong the the receive
             /**
              * send return val > 0 if no problem
              */
-            std::cout << msg << std::endl;
+            std::cout << msg;
 
             /**
              * creating random numbers
@@ -128,17 +129,17 @@ void * TCPServer::clientCommunication(void *_parameter) {
                 responseText.append("light;noise;air#");
             } else if(strcmp(msg, "Sensor(light)#") == 0){
                 responseText.append(timeStamp);
-                responseText.append(" | ");
+                responseText.append("|");
                 responseText.append(std::to_string(numberLight));
                 responseText.append("#");
             } else if(strcmp(msg, "Sensor(noise)#") == 0){
                 responseText.append(timeStamp);
-                responseText.append(" | ");
+                responseText.append("|");
                 responseText.append(std::to_string(numberNoise));
                 responseText.append("#");
             }  else if(strcmp(msg, "Sensor(air)#") == 0){
                 responseText.append(timeStamp);
-                responseText.append(" | ");
+                responseText.append("|");
                 for (int i = 0; i < 2; i++){
                     responseText.append(std::to_string(rand() % 100 + 1));
                     responseText.append(";");
@@ -147,13 +148,13 @@ void * TCPServer::clientCommunication(void *_parameter) {
                 responseText.append("#");
             }   else if(strcmp(msg, "getAllSensors()#") == 0){
                 responseText.append(timeStamp);
-                responseText.append(" | ");
+                responseText.append("|");
                 responseText.append("light;");
                 responseText.append(std::to_string(numberLight));
-                responseText.append(" | ");
+                responseText.append("|");
                 responseText.append("noise;");
                 responseText.append(std::to_string(numberNoise));
-                responseText.append(" | ");
+                responseText.append("|");
                 responseText.append("air;");
                 for (int i = 0; i < 2; i++){
                     responseText.append(std::to_string(rand() % 100 + 1));
@@ -171,7 +172,7 @@ void * TCPServer::clientCommunication(void *_parameter) {
             if (!send(commSocket, sendMsg, strlen(sendMsg), 0) >0) {                   //send the ACK and check if the send method got a error return value (<=0)
                 std::cout << "Error Sending message" << std::endl;
             }
-            memset(sendMsg, '\0', sizeof(sendMsg));
+            memset(sendMsg, '\0', sizeof(sendMsg)+1);
         } else {
             std::cout << "Fehler in der Übertragung" << std::endl;
             //return -1;
