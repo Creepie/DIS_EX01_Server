@@ -106,16 +106,19 @@ void * TCPServer::clientCommunication(void *_parameter) {
     ss << seconds;
     std::string timeStamp = ss.str();
 
-    while (strcmp(msg, "exit") != 0 && strcmp(msg, "shutdown") != 0 ) {
+    while (strcmp(msg, "exit") != 0 && strcmp(msg, "exit\n") != 0 && strcmp(msg, "shutdown") != 0  && strcmp(msg, "shutdown\n") != 0) {
         /**
          * receive return val > 0 if no problem
          */
+        char sendMsg [BUFFER_SIZE];
+        memset(sendMsg, '\0', sizeof(sendMsg)+1);
         memset(msg, '\0', sizeof(msg)+1);
         if (recv(commSocket, msg, BUFFER_SIZE, 0) >0) {                             //check if the recv method got a error return value (<=0) something goes wrong the the receive
             /**
              * send return val > 0 if no problem
              */
             std::cout << msg;
+
 
             /**
              * creating random numbers
@@ -124,20 +127,20 @@ void * TCPServer::clientCommunication(void *_parameter) {
             int numberNoise = rand() % 100 + 1;
             int numberAir = rand() % 100 + 1;
 
-            std::string responseText;                                                  //create a ACK message
-            if (strcmp(msg, "getSensortypes()#") == 0){
-                responseText.append("light;noise;air#");
-            } else if(strcmp(msg, "Sensor(light)#") == 0){
+            std::string responseText;    //create a ACK message
+            if (strcmp(msg, "getSensortypes()#") == 0 || strcmp(msg, "getSensortypes()#\n") == 0){
+                responseText.append("light;noise;air#\n");
+            } else if(strcmp(msg, "Sensor(light)#") == 0 || strcmp(msg, "Sensor(light)#\n") == 0){
                 responseText.append(timeStamp);
                 responseText.append("|");
                 responseText.append(std::to_string(numberLight));
-                responseText.append("#");
-            } else if(strcmp(msg, "Sensor(noise)#") == 0){
+                responseText.append("#\n");
+            } else if(strcmp(msg, "Sensor(noise)#") == 0 || strcmp(msg, "Sensor(noise)#\n") == 0){
                 responseText.append(timeStamp);
                 responseText.append("|");
                 responseText.append(std::to_string(numberNoise));
-                responseText.append("#");
-            }  else if(strcmp(msg, "Sensor(air)#") == 0){
+                responseText.append("#\n");
+            }  else if(strcmp(msg, "Sensor(air)#") == 0 || strcmp(msg, "Sensor(air)#\n") == 0){
                 responseText.append(timeStamp);
                 responseText.append("|");
                 for (int i = 0; i < 2; i++){
@@ -145,8 +148,8 @@ void * TCPServer::clientCommunication(void *_parameter) {
                     responseText.append(";");
                 }
                 responseText.append(std::to_string(rand() % 100 + 1));
-                responseText.append("#");
-            }   else if(strcmp(msg, "getAllSensors()#") == 0){
+                responseText.append("#\n");
+            }   else if(strcmp(msg, "getAllSensors()#") == 0 || strcmp(msg, "getAllSensors()#\n") == 0){
                 responseText.append(timeStamp);
                 responseText.append("|");
                 responseText.append("light;");
@@ -161,26 +164,27 @@ void * TCPServer::clientCommunication(void *_parameter) {
                     responseText.append(";");
                 }
                 responseText.append(std::to_string(rand() % 100 + 1));
-                responseText.append("#");
+                responseText.append("#\n");
             } else{
                 responseText.append("Echo: ");
                 responseText.append(msg);
             }
 
-            char sendMsg [BUFFER_SIZE];
+
             strcpy(sendMsg, responseText.c_str());
             if (!send(commSocket, sendMsg, strlen(sendMsg), 0) >0) {                   //send the ACK and check if the send method got a error return value (<=0)
                 std::cout << "Error Sending message" << std::endl;
             }
-            memset(sendMsg, '\0', sizeof(sendMsg)+1);
+
         } else {
             std::cout << "Fehler in der Übertragung" << std::endl;
             //return -1;
         }
     }
-    int closeSocket = close(commSocket);                                        //close the client socket
     incrementSem();
-    if (strcmp(msg, "shutdown")== 0 ){
+    int closeSocket = close(commSocket);                                        //close the client socket
+    std::cout << "thread kurz vor delte" << std::endl;
+    if (strcmp(msg, "shutdown")== 0 || strcmp(msg, "shutdown\n") == 0){
         int closeServerSocket = close(serverSocket);
         exit(0);
     }
@@ -209,6 +213,7 @@ void TCPServer::startSocket() {
             if (pthread_create(&threadID,NULL,clientCommunication, param) != 0){
                 std::cout << "Problem in der Thread Method" << std::endl;
             }
+            std::cout << "rdy für neuen client" << std::endl;
         }
 }
 
