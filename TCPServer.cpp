@@ -110,20 +110,43 @@ void * TCPServer::clientCommunication(void *_parameter) {
              */
             std::cout << msg << std::endl;
 
+            /**
+             * creating random numbers
+             */
+            int numberLight = rand() % 100 + 1;
+            int numberNoise = rand() % 100 + 1;
+            int numberAir = rand() % 100 + 1;
+
             std::string responseText;                                                  //create a ACK message
             if (strcmp(msg, "getSensortypes()#") == 0){
                 responseText.append("light;noise;air#");
             } else if(strcmp(msg, "Sensor(light)#") == 0){
                 responseText.append(timeStamp);
-                responseText.append(" light");
+                responseText.append(" | ");
+                responseText.append(std::to_string(numberLight));
+                responseText.append(" #");
             } else if(strcmp(msg, "Sensor(noise)#") == 0){
                 responseText.append(timeStamp);
-                responseText.append(" noise");
+                responseText.append(" | ");
+                responseText.append(std::to_string(numberNoise));
+                responseText.append(" #");
             }  else if(strcmp(msg, "Sensor(air)#") == 0){
                 responseText.append(timeStamp);
-                responseText.append(" air");
+                responseText.append(" | ");
+                responseText.append(std::to_string(numberAir));
+                responseText.append(" #");
             }   else if(strcmp(msg, "getAllSensors()#") == 0){
-
+                responseText.append(timeStamp);
+                responseText.append(" | ");
+                responseText.append("light;");
+                responseText.append(std::to_string(numberLight));
+                responseText.append(" | ");
+                responseText.append("noise;");
+                responseText.append(std::to_string(numberNoise));
+                responseText.append(" | ");
+                responseText.append("air;");
+                responseText.append(std::to_string(numberAir));
+                responseText.append("#");
             } else{
                 responseText.append("Echo: ");
                 responseText.append(msg);
