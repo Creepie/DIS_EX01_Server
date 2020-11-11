@@ -19,6 +19,7 @@
 #define IPPORT (_argv[1])
 
 static pthread_mutex_t mMutex;
+static sem_t *mSem;
 
 class TCPServer {
 public:

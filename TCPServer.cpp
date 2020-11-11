@@ -18,6 +18,10 @@
 
 TCPServer::TCPServer(int _port) {
     ipPort = _port;
+
+    sem_unlink("/semaphore01");
+    mSem = sem_open("semaphore01", O_CREAT|O_EXCL, 0777, 1);
+
     mMutex = PTHREAD_MUTEX_INITIALIZER;
     if (pthread_mutex_init(&mMutex, NULL) != 0){
         std::cout << "Fehler in der mMutex init" << std::endl;
@@ -71,14 +75,16 @@ void TCPServer::initializeSocket() {
  * in this method i increment the sem
  */
 void TCPServer::incrementSem() {
-   pthread_mutex_unlock(&mMutex);
+    sem_close(mSem);
+   //pthread_mutex_unlock(&mMutex);
 }
 
 /**
  * in this method i decrement the sem
  */
 void TCPServer::decrementSem() {
-    pthread_mutex_lock(&mMutex);
+    sem_wait(mSem);
+    //pthread_mutex_lock(&mMutex);
 }
 
 void * TCPServer::clientCommunication(void *_parameter) {
