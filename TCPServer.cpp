@@ -32,25 +32,25 @@ void TCPServer::initializeSocket() {
     /**
      * Socket
      */
-    int _addressFormat = AF_INET;                                                  //Format Ipv4
-    int _socketType = SOCK_STREAM;                                                 //TCP
-    int _socketProtocol = 0;                                                       //communication protocol > self check
+    int mAddressFormat = AF_INET;                                                  //Format Ipv4
+    int mSocketType = SOCK_STREAM;                                                 //TCP
+    int mSocketProtocol = 0;                                                       //communication protocol > self check
 
-    serverSocket = socket(_addressFormat, _socketType, _socketProtocol);       //creates a server Socket
+    serverSocket = socket(mAddressFormat, mSocketType, mSocketProtocol);       //creates a server Socket
 
     /**
      * Bind
      */
-    struct sockaddr_in serverAddr;                                                 //creates a sockaddr_in object (in = internet)
-    serverAddr.sin_family = AF_INET;                                               //Format Ipv4
-    serverAddr.sin_port = ipPort;                                                  //get the Port from the IPPORT (htons = host to network short, atoi = argument to integer)
-    serverAddr.sin_addr.s_addr = INADDR_ANY;                                       //search automatically the ipAdress
-    memset(&(serverAddr.sin_zero), '\0',8);                                // \0 get copied in the first 8 char character of sin_zero
+    struct sockaddr_in mServerAddr;                                                 //creates a sockaddr_in object (in = internet)
+    mServerAddr.sin_family = AF_INET;                                               //Format Ipv4
+    mServerAddr.sin_port = ipPort;                                                  //get the Port from the IPPORT (htons = host to network short, atoi = argument to integer)
+    mServerAddr.sin_addr.s_addr = INADDR_ANY;                                       //search automatically the ipAdress
+    memset(&(mServerAddr.sin_zero), '\0', 8);                                // \0 get copied in the first 8 char character of sin_zero
 
     /**
      * check if the bind method got a error return value (<0)
      */
-    if (bind(serverSocket, (sockaddr *) &serverAddr, sizeof(serverAddr)) <0) {
+    if (bind(serverSocket, (sockaddr *) &mServerAddr, sizeof(mServerAddr)) < 0) {
         std::cout << "Fehler in der Bind" << std::endl;
         return;
     }
@@ -58,17 +58,17 @@ void TCPServer::initializeSocket() {
     /**
      * set SocketOptions
      */
-    bool bOptVal = true;
-    int bOptLen = sizeof(bool);
-    if (setsockopt(serverSocket, SOL_SOCKET,SO_REUSEADDR,(char*)&bOptVal,bOptLen) == -1){
+    bool mBOptVal = true;
+    int mBOptLen = sizeof(bool);
+    if (setsockopt(serverSocket, SOL_SOCKET, SO_REUSEADDR, (char*)&mBOptVal, mBOptLen) == -1){
         std::cout << "socket Freigabe war nicht möglich" << std::endl;
     }
 
     /**
      * listen
      */
-    int backlock = 20;                                                              //count of connections
-    int serverListen = listen(serverSocket, backlock);                              //
+    int mBacklock = 20;                                                              //count of connections
+    int serverListen = listen(serverSocket, mBacklock);                              //
 }
 
 /**
@@ -89,58 +89,57 @@ void TCPServer::decrementSem() {
 
 void * TCPServer::clientCommunication(void *_parameter) {
 
-    SocketParam *param = (SocketParam*)_parameter;
+    SocketParam *mParam = (SocketParam*)_parameter;
 
     decrementSem();
-    int commSocket = param->commSocket;
-    int serverSocket = param->serverSocketParam;
+    int commSocket = mParam->commSocket;
+    int serverSocket = mParam->serverSocketParam;
 
-    char msg[BUFFER_SIZE];
+    char mMsg[BUFFER_SIZE];
 
     /**
      * get timeStamp and save it in a String
      */
-    time_t seconds;
-    time(&seconds);
+    time_t mSeconds;
+    time(&mSeconds);
     std::stringstream ss;
-    ss << seconds;
+    ss << mSeconds;
     std::string timeStamp = ss.str();
 
-    while (strcmp(msg, "exit") != 0 && strcmp(msg, "exit\n") != 0 && strcmp(msg, "shutdown") != 0  && strcmp(msg, "shutdown\n") != 0) {
+    while (strcmp(mMsg, "exit") != 0 && strcmp(mMsg, "exit\n") != 0 && strcmp(mMsg, "shutdown") != 0 && strcmp(mMsg, "shutdown\n") != 0) {
         /**
          * receive return val > 0 if no problem
          */
-        char sendMsg [BUFFER_SIZE];
-        memset(sendMsg, '\0', sizeof(sendMsg)+1);
-        memset(msg, '\0', sizeof(msg)+1);
-        if (recv(commSocket, msg, BUFFER_SIZE, 0) >0) {                             //check if the recv method got a error return value (<=0) something goes wrong the the receive
+        char mSendMsg [BUFFER_SIZE];
+        memset(mSendMsg, '\0', sizeof(mSendMsg) + 1);
+        memset(mMsg, '\0', sizeof(mMsg) + 1);
+        if (recv(commSocket, mMsg, BUFFER_SIZE, 0) > 0) {                             //check if the recv method got a error return value (<=0) something goes wrong the the receive
             /**
              * send return val > 0 if no problem
              */
-            std::cout << msg;
+            std::cout << mMsg;
 
 
             /**
              * creating random numbers
              */
-            int numberLight = rand() % 100 + 1;
-            int numberNoise = rand() % 100 + 1;
-            int numberAir = rand() % 100 + 1;
+            int mNumberLight = rand() % 100 + 1;
+            int mNumberNoise = rand() % 100 + 1;
 
             std::string responseText;    //create a ACK message
-            if (strcmp(msg, "getSensortypes()#") == 0 || strcmp(msg, "getSensortypes()#\n") == 0){
+            if (strcmp(mMsg, "getSensortypes()#") == 0 || strcmp(mMsg, "getSensortypes()#\n") == 0){
                 responseText.append("light;noise;air#\n");
-            } else if(strcmp(msg, "Sensor(light)#") == 0 || strcmp(msg, "Sensor(light)#\n") == 0){
+            } else if(strcmp(mMsg, "Sensor(light)#") == 0 || strcmp(mMsg, "Sensor(light)#\n") == 0){
                 responseText.append(timeStamp);
                 responseText.append("|");
-                responseText.append(std::to_string(numberLight));
+                responseText.append(std::to_string(mNumberLight));
                 responseText.append("#\n");
-            } else if(strcmp(msg, "Sensor(noise)#") == 0 || strcmp(msg, "Sensor(noise)#\n") == 0){
+            } else if(strcmp(mMsg, "Sensor(noise)#") == 0 || strcmp(mMsg, "Sensor(noise)#\n") == 0){
                 responseText.append(timeStamp);
                 responseText.append("|");
-                responseText.append(std::to_string(numberNoise));
+                responseText.append(std::to_string(mNumberNoise));
                 responseText.append("#\n");
-            }  else if(strcmp(msg, "Sensor(air)#") == 0 || strcmp(msg, "Sensor(air)#\n") == 0){
+            }  else if(strcmp(mMsg, "Sensor(air)#") == 0 || strcmp(mMsg, "Sensor(air)#\n") == 0){
                 responseText.append(timeStamp);
                 responseText.append("|");
                 for (int i = 0; i < 2; i++){
@@ -149,14 +148,14 @@ void * TCPServer::clientCommunication(void *_parameter) {
                 }
                 responseText.append(std::to_string(rand() % 100 + 1));
                 responseText.append("#\n");
-            }   else if(strcmp(msg, "getAllSensors()#") == 0 || strcmp(msg, "getAllSensors()#\n") == 0){
+            }   else if(strcmp(mMsg, "getAllSensors()#") == 0 || strcmp(mMsg, "getAllSensors()#\n") == 0){
                 responseText.append(timeStamp);
                 responseText.append("|");
                 responseText.append("light;");
-                responseText.append(std::to_string(numberLight));
+                responseText.append(std::to_string(mNumberLight));
                 responseText.append("|");
                 responseText.append("noise;");
-                responseText.append(std::to_string(numberNoise));
+                responseText.append(std::to_string(mNumberNoise));
                 responseText.append("|");
                 responseText.append("air;");
                 for (int i = 0; i < 2; i++){
@@ -167,12 +166,12 @@ void * TCPServer::clientCommunication(void *_parameter) {
                 responseText.append("#\n");
             } else{
                 responseText.append("Echo: ");
-                responseText.append(msg);
+                responseText.append(mMsg);
             }
 
 
-            strcpy(sendMsg, responseText.c_str());
-            if (!send(commSocket, sendMsg, strlen(sendMsg), 0) >0) {                   //send the ACK and check if the send method got a error return value (<=0)
+            strcpy(mSendMsg, responseText.c_str());
+            if (!send(commSocket, mSendMsg, strlen(mSendMsg), 0) > 0) {                   //send the ACK and check if the send method got a error return value (<=0)
                 std::cout << "Error Sending message" << std::endl;
             }
 
@@ -183,9 +182,9 @@ void * TCPServer::clientCommunication(void *_parameter) {
     }
     incrementSem();
     std::cout << "thread kurz vor delte" << std::endl;
-    if (strcmp(msg, "shutdown")== 0 || strcmp(msg, "shutdown\n") == 0){
-        int closeSocket = close(commSocket);
-        int closeServerSocket = close(serverSocket);
+    if (strcmp(mMsg, "shutdown") == 0 || strcmp(mMsg, "shutdown\n") == 0){
+        int mCloseSocket = close(commSocket);
+        int mCloseServerSocket = close(serverSocket);
         exit(0);
     }
 }
@@ -196,21 +195,21 @@ void TCPServer::startSocket() {
     /**
      * accept
      */
-    struct sockaddr_in clientAddr;                                              //creates a sockaddr_in object (in = internet)
-    socklen_t clientAddrSize = sizeof(clientAddr);                              //creates a socklen_t variable with the size of clientAddr in it
+    struct sockaddr_in mClientAddr;                                              //creates a sockaddr_in object (in = internet)
+    socklen_t mClientAddrSize = sizeof(mClientAddr);                              //creates a socklen_t variable with the size of mClientAddr in it
 
         while (true){
             /**
-             * commSocket > socket for each client
+             * mCommSocket > socket for each client
              */
-            int commSocket = accept(serverSocket, (sockaddr *) &clientAddr,&clientAddrSize);    //creates the commSocket in the serverSocket
+            int mCommSocket = accept(serverSocket, (sockaddr *) &mClientAddr, &mClientAddrSize);    //creates the mCommSocket in the serverSocket
 
-            SocketParam *param = new SocketParam;
-            param->commSocket = commSocket;
-            param->serverSocketParam = serverSocket;
+            SocketParam *mParam = new SocketParam;
+            mParam->commSocket = mCommSocket;
+            mParam->serverSocketParam = serverSocket;
 
-            pthread_t threadID;
-            if (pthread_create(&threadID,NULL,clientCommunication, param) != 0){
+            pthread_t mThreadID;
+            if (pthread_create(&mThreadID, NULL, clientCommunication, mParam) != 0){
                 std::cout << "Problem in der Thread Method" << std::endl;
             }
         }
