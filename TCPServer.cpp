@@ -16,21 +16,30 @@
 
 #define BUFFER_SIZE 1024
 
+/**
+ * the Constructor declare the sem and save the input param _port into the global variable ipPort
+ * @param _port is the given port from the main
+ */
 TCPServer::TCPServer(int _port) {
     ipPort = _port;
 
+    //init the semaphore (mac style)
     sem_unlink("/semaphore01");
-    mSem = sem_open("semaphore01", O_CREAT|O_EXCL, 0777, 1);
+    mSem = sem_open("/semaphore01", O_CREAT|O_EXCL, 0777, 3);
 
+    //mMutex (not in use at the moment)
     mMutex = PTHREAD_MUTEX_INITIALIZER;
     if (pthread_mutex_init(&mMutex, NULL) != 0){
         std::cout << "Fehler in der mMutex init" << std::endl;
     }
 }
 
+/**
+ * this method initialize the Server Socket to be ready for the communication with the clients
+ */
 void TCPServer::initializeSocket() {
     /**
-     * Socket
+     * creates a server Socket with the right param like tcp type and so on
      */
     int mAddressFormat = AF_INET;                                                  //Format Ipv4
     int mSocketType = SOCK_STREAM;                                                 //TCP
@@ -39,7 +48,7 @@ void TCPServer::initializeSocket() {
     serverSocket = socket(mAddressFormat, mSocketType, mSocketProtocol);       //creates a server Socket
 
     /**
-     * Bind
+     * write into the sockaddr_in struct the datas we need (ip adress, format IPV4,...)
      */
     struct sockaddr_in mServerAddr;                                                 //creates a sockaddr_in object (in = internet)
     mServerAddr.sin_family = AF_INET;                                               //Format Ipv4
@@ -49,14 +58,16 @@ void TCPServer::initializeSocket() {
 
     /**
      * check if the bind method got a error return value (<0)
+     * Bind
      */
     if (bind(serverSocket, (sockaddr *) &mServerAddr, sizeof(mServerAddr)) < 0) {
         std::cout << "Fehler in der Bind" << std::endl;
-        return;
+        exit(-1);
     }
 
     /**
-     * set SocketOptions
+     * set SocketOptions >> not working on mac!?
+     * this method is for optimization
      */
     bool mBOptVal = true;
     int mBOptLen = sizeof(bool);
@@ -66,10 +77,14 @@ void TCPServer::initializeSocket() {
 
     /**
      * listen
+     * set the server in listen mode
      */
-    int mBacklock = 20;                                                              //count of connections
-    int serverListen = listen(serverSocket, mBacklock);                              //
-}
+    int mBacklog = 20;                                                              //count of connections
+    if(listen(serverSocket, mBacklog) <0 ){
+        std::cout << "got a error in the backlog" << std::endl;
+        exit(-1);
+    }
+} //end initializeSocket method
 
 /**
  * in this method i increment the sem
@@ -87,38 +102,46 @@ void TCPServer::decrementSem() {
     //pthread_mutex_lock(&mMutex);
 }
 
+/**
+ * in the client Communication the Client can communicate with the server
+ * @param _parameter is the paramters to get the Socket and the comm Socket param
+ * @return with exit code 0 if the client writes "shutdown"
+ */
 void * TCPServer::clientCommunication(void *_parameter) {
 
     SocketParam *mParam = (SocketParam*)_parameter;
-
+    //decrementSem because client goes into the thread
     decrementSem();
     int commSocket = mParam->commSocket;
     int serverSocket = mParam->serverSocketParam;
 
+    std::cout << "inside the clientCommunication" << std::endl;
+
     char mMsg[BUFFER_SIZE];
 
-    /**
-     * get timeStamp and save it in a String
-     */
-    time_t mSeconds;
-    time(&mSeconds);
-    std::stringstream ss;
-    ss << mSeconds;
-    std::string timeStamp = ss.str();
-
     while (strcmp(mMsg, "exit") != 0 && strcmp(mMsg, "exit\n") != 0 && strcmp(mMsg, "shutdown") != 0 && strcmp(mMsg, "shutdown\n") != 0) {
+        /**
+        * get timeStamp and save it in a String
+        */
+        time_t mSeconds;
+        time(&mSeconds);
+        std::stringstream ss;
+        ss << mSeconds;
+        std::string timeStamp = ss.str();
+
         /**
          * receive return val > 0 if no problem
          */
         char mSendMsg [BUFFER_SIZE];
+
         memset(mSendMsg, '\0', sizeof(mSendMsg) + 1);
         memset(mMsg, '\0', sizeof(mMsg) + 1);
         if (recv(commSocket, mMsg, BUFFER_SIZE, 0) > 0) {                             //check if the recv method got a error return value (<=0) something goes wrong the the receive
             /**
              * send return val > 0 if no problem
              */
-            std::cout << mMsg;
 
+            std::cout << mMsg << std::endl;
 
             /**
              * creating random numbers
@@ -167,6 +190,7 @@ void * TCPServer::clientCommunication(void *_parameter) {
             } else{
                 responseText.append("Echo: ");
                 responseText.append(mMsg);
+                responseText.append("\n");
             }
 
 
@@ -180,6 +204,7 @@ void * TCPServer::clientCommunication(void *_parameter) {
             //return -1;
         }
     }
+    //incrementSem because client leave the thread
     incrementSem();
     std::cout << "thread kurz vor delte" << std::endl;
     if (strcmp(mMsg, "shutdown") == 0 || strcmp(mMsg, "shutdown\n") == 0){
@@ -187,13 +212,17 @@ void * TCPServer::clientCommunication(void *_parameter) {
         int mCloseServerSocket = close(serverSocket);
         exit(0);
     }
-}
+} //end clientCommunication method
 
+/**
+ * this method starts the socket and waits for clients
+ * this method contains threading
+ */
 void TCPServer::startSocket() {
     std::cout << "waiting for connection" << std::endl;
 
     /**
-     * accept
+     * set data for the accept method
      */
     struct sockaddr_in mClientAddr;                                              //creates a sockaddr_in object (in = internet)
     socklen_t mClientAddrSize = sizeof(mClientAddr);                              //creates a socklen_t variable with the size of mClientAddr in it
@@ -208,10 +237,12 @@ void TCPServer::startSocket() {
             mParam->commSocket = mCommSocket;
             mParam->serverSocketParam = serverSocket;
 
+            std::cout << "vor create thread" << std::endl;
+
             pthread_t mThreadID;
             if (pthread_create(&mThreadID, NULL, clientCommunication, mParam) != 0){
                 std::cout << "Problem in der Thread Method" << std::endl;
             }
         }
-}
+} //end startSocket method
 

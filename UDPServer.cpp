@@ -19,9 +19,12 @@ UDPServer::UDPServer(int port) {
     ipPort = port;
 }
 
+/**
+ * this method initializes the ServerSocket > after that a Client can communicate with the server
+ */
 void UDPServer::initializeSocket() {
     /**
-     * Socket
+     * create the Socket with the ipv4 format,.. parameters
      */
     int _addressFormat = AF_INET;                                                  //Format Ipv4
     int _socketType = SOCK_DGRAM;                                                 //UDP
@@ -30,7 +33,7 @@ void UDPServer::initializeSocket() {
     serverSocket = socket(_addressFormat, _socketType, _socketProtocol);       //creates a server Socket
 
     /**
-     * Bind
+     * add params into serverAddr > for the Bind
      */
     struct sockaddr_in serverAddr;                                                 //creates a sockaddr_in object (in = internet)
     serverAddr.sin_family = AF_INET;                                               //Format Ipv4
@@ -38,6 +41,7 @@ void UDPServer::initializeSocket() {
     serverAddr.sin_addr.s_addr = INADDR_ANY;                                       //search automatically the ipAdress
     memset(&(serverAddr.sin_zero), '\0',8);                                // \0 get copied in the first 8 char character of sin_zero
     /**
+     * start the bind method
      * check if the bind method got a error return value (<0)
      */
     if (bind(serverSocket, (sockaddr *) &serverAddr, sizeof(serverAddr)) <0) {     //check if the bind method got a error return value (<0)
@@ -46,6 +50,10 @@ void UDPServer::initializeSocket() {
     }
 }
 
+/**
+ * this method starts the UDP Socket > after that a client can communicate
+ * and send an Echo from the client message back to the client
+ */
 void UDPServer::startSocket() {
     std::cout << "ready for conversation" << std::endl;
     /**

@@ -15,10 +15,17 @@
 
 #define BUFFER_SIZE 1024
 
+/**
+ * the Constructor declare _port into the global variable ipPort
+ * @param port is the given port from the main
+ */
 TCPv6Server::TCPv6Server(int port) {
     ipPort = port;
 }
 
+/**
+ * this method initialize the Server Socket to be ready for the communication with the clients
+ */
 void TCPv6Server::initializeSocket() {
 
     /**
@@ -59,11 +66,19 @@ void TCPv6Server::initializeSocket() {
 
     /**
      * listen
+     * set the server in listen mode (backlog = the count of connections)
      */
-    int backlock = 20;                                       //count of connections
-    int serverListen = listen(serverSocket, backlock);       //
+    int backlog = 20;
+    if(listen(serverSocket, backlog) < 0){
+        std::cout << "got a error in the backlog" << std::endl;
+        exit(-1);
+    }
 }
 
+/**
+ * this method starts the socket and waits for clients
+ * the server sends an ECHO to the Client
+ */
 void TCPv6Server::startSocket() {
     std::cout << "waiting for connection" << std::endl;
 
