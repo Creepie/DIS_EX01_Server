@@ -15,6 +15,10 @@
 
 #define BUFFER_SIZE 1024
 
+/**
+ * the Constructor declare _port into the global variable ipPort
+ * @param port is the given port from the main
+ */
 UDPServer::UDPServer(int port) {
     ipPort = port;
 }
@@ -46,9 +50,9 @@ void UDPServer::initializeSocket() {
      */
     if (bind(serverSocket, (sockaddr *) &serverAddr, sizeof(serverAddr)) <0) {     //check if the bind method got a error return value (<0)
         std::cout << "Fehler in der Bind" << std::endl;
-        return;
+        exit(-1);
     }
-}
+} // end initializeSocket method
 
 /**
  * this method starts the UDP Socket > after that a client can communicate
@@ -93,14 +97,20 @@ void UDPServer::startSocket() {
              */
             if (sendto(serverSocket, sendMsg, msgSize,0,(sockaddr*) &toAddr, toSize) == -1){
                 std::cout << "Fehler in der Send" << std::endl;
+                return;
             }
             if (strcmp(msg, "shutdown") != 0){
-                    memset(msg, '\0', sizeof(msg));                                      //reset msg
+                //reset message
+                memset(msg, '\0', sizeof(msg));                                      //reset msg
                 }
+        } else{
+            std::cout << "Fehler in der Übertragung" << std::endl;
+            return;
         }
     } // end while
     if (close(serverSocket) == -1){
         std::cout << "Fehler in der Close" << std::endl;
+        exit(-1);
     }
 
 }

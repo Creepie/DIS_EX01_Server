@@ -20,6 +20,7 @@
  * @param port is the given port from the main
  */
 TCPv6Server::TCPv6Server(int port) {
+    //ipPort is a global variable which holds the given port
     ipPort = port;
 }
 
@@ -29,7 +30,7 @@ TCPv6Server::TCPv6Server(int port) {
 void TCPv6Server::initializeSocket() {
 
     /**
-     * Socket
+     * creates a server Socket with the right param like tcp type and so on
      */
     int _addressFormat = AF_INET6;          //Format Ipv6
     int _socketType = SOCK_STREAM;          //TCP
@@ -38,6 +39,7 @@ void TCPv6Server::initializeSocket() {
     serverSocket = socket(_addressFormat, _socketType, _socketProtocol);       //creates a server Socket
 
     /**
+     * check if the bind method got a error return value (<0) > if error exit
      * Bind
      */
     struct sockaddr_in6 serverAddr;          //creates a sockaddr_in object (in = internet)
@@ -52,11 +54,12 @@ void TCPv6Server::initializeSocket() {
      */
     if (bind(serverSocket, (sockaddr *) &serverAddr, sizeof(serverAddr)) <0) {
         std::cout << "Fehler in der Bind" << std::endl;
-        return;
+        exit(-1);
     }
 
     /**
      * setSocketOptions
+     * this method is for optimization
      */
     bool bOptVal = true;
     int bOptLen = sizeof(bool);
@@ -73,7 +76,7 @@ void TCPv6Server::initializeSocket() {
         std::cout << "got a error in the backlog" << std::endl;
         exit(-1);
     }
-}
+} // end initializeSocket method
 
 /**
  * this method starts the socket and waits for clients
@@ -83,7 +86,7 @@ void TCPv6Server::startSocket() {
     std::cout << "waiting for connection" << std::endl;
 
     /**
-     * accept
+     * accept > the server accepts a client
      */
     struct sockaddr_in6 clientAddr;                                              //creates a sockaddr_in object (in = internet)
     socklen_t clientAddrSize = sizeof(clientAddr);                              //creates a socklen_t variable with the size of clientAddr in it
@@ -116,14 +119,15 @@ void TCPv6Server::startSocket() {
                 memset(sendMsg, '\0', sizeof(sendMsg));
             } else {
                 std::cout << "Fehler in der Übertragung" << std::endl;
-                //return -1;
+                return;
             }
 
         } // close first while (commSocket with client)
         if (strcmp(msg, "shutdown") != 0){
+            //reset the msg
             memset(msg, '\0', sizeof(msg));             //reset msg
         }
-        int closeSocket = close(commSocket);               //close the client socket
+        close(commSocket);                                 //close the client socket
     } // close second while (serverSocket)
-    int closeSocket = close(serverSocket);
+    close(serverSocket);
 }
